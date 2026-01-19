@@ -1,0 +1,13 @@
+# Manipulação e análise de dados
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Utilitários para arquivos e datas
+pathlib2>=2.3.7
+python-dateutil>=2.8.2
+
+# Progress bar para processamento
+tqdm>=4.65.0
+
+# Qualidade de código (opcional)
+black>=23.0.0
