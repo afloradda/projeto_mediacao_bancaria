@@ -47,6 +47,8 @@ PROCESSING_CONFIG = {
 
 AGIBANK_FILTERS = {
     'bank_names': [
+        'Banco Agibank',
+        'Banco Agibank (Agiplan)',
         'AGIBANK',
         'AGI BANK', 
         'BANCO AGIBANK',
