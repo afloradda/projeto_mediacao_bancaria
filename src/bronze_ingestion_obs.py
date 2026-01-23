@@ -12,19 +12,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-"""
-Esta função assegura que os arquivos CSV esperados estão realmente disponíveis no diretório.
-
-1. Usa glob.glob() para listar os arquivos.
-2. Conta o total encontrado e dispara um erro (FileNotFoundError) se não houver nenhum.
-3. Utiliza Path(file).name para extrair o nome do arquivo isolado (sem o caminho completo).
-4. A verificação "2025" not in Path(file).name cria uma sanity check básica para garantir que o arquivo é do período correto.
-"""
 def validate_files():
     
     logger.info("Validando arquivos disponíveis...")
 
-    consumidor_files = glob.glob("../data/bronze/consumidor_gov/*.csv") # ⚠️ DATA_SOURCES['bronze']['consumidor_gov']
+    consumidor_files = glob.glob("../data/bronze/consumidor_gov/*.csv") 
     print(f"Temos {len(consumidor_files)} arquivos do Consumidor.gov")
 
     if len(consumidor_files) == 0:
@@ -38,9 +30,6 @@ def validate_files():
     return consumidor_files
 
 
-"""
-Esta função tem como objetivo inspecionar a estrutura interna de um dos arquivos (colunas, formatos e dimensões).
-"""
 def explore_data_structure(file_path): # ⚠️
     
     logger.info(f"Explorando estrutura: {Path(file_path).name}")
@@ -83,6 +72,7 @@ def add_metadata_columns(df, file_path, source_type):
     logger.info(df.columns[-5:])
     return df
 
+
 def filter_agibank_records(df):
     """Task 4: Identificar e marcar registros do Agibank"""
     logger.info("Identificando registros Agibank...")
@@ -111,6 +101,7 @@ def filter_agibank_records(df):
         logger.warning("Coluna de empresa não identificada")
 
     return df
+
 
 def quality_check(df, file_name):
     """Task 5: Verificação de qualidade dos dados"""
@@ -195,6 +186,7 @@ def save_bronze_output(df, output_path):
     logger.info(f"Colunas: {len(df.columns)}")
 
     return True
+
 
 def bronze_dag():
     """DAG principal da camada bronze"""
