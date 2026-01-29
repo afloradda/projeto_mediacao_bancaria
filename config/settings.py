@@ -11,7 +11,8 @@ DATA_SOURCES = {
         'name': 'Consumidor.gov.br',
         'base_url': 'https://dados.mj.gov.br/dataset/',
         'file_pattern': '*.csv',
-        'encoding': 'utf-8'
+        'encoding': 'utf-8',
+        'separator': ';'
     },
     'sindec': {
         'name': 'SINDEC',

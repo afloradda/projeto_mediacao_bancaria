@@ -34,7 +34,7 @@ def explore_data_structure(file_path): # ⚠️
     
     logger.info(f"Explorando estrutura: {Path(file_path).name}")
 
-    sample_df = pd.read_csv(file_path, encoding='utf-8')
+    sample_df = pd.read_csv(file_path, sep=';', encoding='utf-8')
 
     info = {
         'columns': list(sample_df.columns),
@@ -149,7 +149,7 @@ def process_consumidor_gov():
 
         try:
             # Ler arquivo
-            df = pd.read_csv(file_path, encoding='utf-8') # lê o arquivo da vez
+            df = pd.read_csv(file_path, sep=';', encoding='utf-8')
             original_rows = len(df)
 
             df = add_metadata_columns(df, file_path, 'consumidor_gov')
