@@ -43,6 +43,18 @@ PROCESSING_CONFIG = {
 }
 
 # ==========================================
+# DELETE COLUMNS
+# ==========================================
+
+CONSUMIDOR_GOV_DELETE_COLUMNS = {
+    'columns': [
+        'Data Análise',
+        'Data Recusa',
+        'Prazo Analise Gestor',
+    ]
+}
+
+# ==========================================
 # FILTROS ESPECÍFICOS AGIBANK
 # ==========================================
 

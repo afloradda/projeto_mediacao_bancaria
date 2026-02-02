@@ -6,7 +6,7 @@ from datetime import datetime
 import sys
 
 sys.path.append('..')
-from config.settings import DATA_SOURCES, QUALITY_CHECKS, PROCESSING_CONFIG, AGIBANK_FILTERS
+from config.settings import QUALITY_CHECKS, PROCESSING_CONFIG, AGIBANK_FILTERS, CONSUMIDOR_GOV_DELETE_COLUMNS
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def validate_files():
     return consumidor_files
 
 
-def explore_data_structure(file_path): # ⚠️
+def explore_data_structure(file_path): 
     
     logger.info(f"Explorando estrutura: {Path(file_path).name}")
 
@@ -48,6 +48,31 @@ def explore_data_structure(file_path): # ⚠️
 
     return info
 
+
+def delete_columns_dispensaveis(df, file_path):
+    logger.info(f"Deletando colunas dispensáveis dentro do dataframe: {Path(file_path).name}")
+
+    columns_to_delete = CONSUMIDOR_GOV_DELETE_COLUMNS['columns']
+
+    existing_columns = [col for col in columns_to_delete if col in df.columns]
+    missing_columns = [col for col in columns_to_delete if col not in df.columns]
+
+    if existing_columns:
+        df_cleaned = df.drop(columns=existing_columns)
+        logger.info(f"Deletadas: {len(existing_columns)}x \n  Colunas: {existing_columns}")
+    else: 
+        df_cleaned = df.copy()
+        logger.info(" Nenhuma coluna para deletar encontrada.")
+
+    if missing_columns:
+        logger.info(f"Colunas não encontradas: {missing_columns}")
+
+    original_cols = len(df.columns)
+    final_cols = len(df_cleaned.columns)
+    logger.info(f"  Colunas: {original_cols} -> {final_cols}")
+
+    return df_cleaned
+    
 
 def add_metadata_columns(df, file_path, source_type):
     """Task 3: Adicionar colunas de metadados"""
@@ -102,6 +127,19 @@ def filter_agibank_records(df):
 
     return df
 
+def clean_duplicates(df, file_name):
+
+    logger.info(f"  Limpando duplicatas: {file_name}")
+
+    original_rows = len(df)
+
+    df_cleaned = df.drop_duplicates()
+    duplicates_removed = original_rows - len(df_cleaned)
+
+    logger.info(f"   Duplicatas removidas: {duplicates_removed}")
+
+    return df_cleaned
+
 
 def quality_check(df, file_name):
     """Task 5: Verificação de qualidade dos dados"""
@@ -140,34 +178,54 @@ def process_consumidor_gov():
     """Task 6: Processamento completo Consumidor.gov"""
     logger.info("Iniciando processamento Consumidor.gov...")
 
-    consumidor_files = glob.glob("../data/bronze/consumidor_gov/*.csv") # Retorna uma lista de strings
+    consumidor_files = glob.glob("../data/bronze/consumidor_gov/*.csv")
     all_dataframes = []
     all_issues = []
 
-    for file_path in sorted(consumidor_files): # Assegura que a lista 'consumidor_files' esteja em ordem alfabetica e/ou numérica
-        logger.info(f"  Processando: {Path(file_path).name}")
+    for file_path in sorted(consumidor_files):
+        logger.info(f"   Processando: {Path(file_path).name}")
 
         try:
-            # Ler arquivo
+            # 1. Ler arquivo
             df = pd.read_csv(file_path, sep=';', encoding='utf-8')
             original_rows = len(df)
 
+            # 2. Deletar colunas dispensáveis
+            df = delete_columns_dispensaveis(df, file_path)
+            
+            # 3. Adicionar metadados
             df = add_metadata_columns(df, file_path, 'consumidor_gov')
+            
+            # 4. Identificar Agibank
             df = filter_agibank_records(df)
+            
+            # 5. Limpeza de duplicatas e nulos
+            df = clean_duplicates(df, Path(file_path).name)
+            
+            # 6. Verificações de qualidade
             df, issues = quality_check(df, Path(file_path).name)
 
             all_issues.extend(issues)
             all_dataframes.append(df)
 
-            logger.info(f"  {Path(file_path).name}: {original_rows} -> {len(df)} registros")
+            logger.info(f"   ✅ {Path(file_path).name}: {original_rows} → {len(df)} registros")
 
         except Exception as e:
-            logger.error(f" Erro processando {Path(file_path).name}: {str(e)}")
-            continue # faz o loop seguir para o próximo arquivo sem parar a execução global
+            logger.error(f"   Erro processando {Path(file_path).name}: {str(e)}")
+            continue
 
     if all_dataframes:
-        combined_df = pd.concat(all_dataframes, ignore_index= True) # concatena verticalmente os dataframes da lista all_dataframes
-        logger.info(f"Consumidor.gov processado {len(combined_df)} registros totais")
+        combined_df = pd.concat(all_dataframes, ignore_index=True)
+        logger.info(f"Consumidor.gov processado: {len(combined_df)} registros totais")
+        
+        # Limpeza final de duplicatas entre arquivos
+        original_combined = len(combined_df)
+        combined_df = combined_df.drop_duplicates()
+        final_combined = len(combined_df)
+        
+        if original_combined != final_combined:
+            logger.info(f"  Duplicatas entre arquivos removidas: {original_combined - final_combined}")
+        
         return combined_df, all_issues
     else:
         raise Exception("Nenhum arquivo foi processado com sucesso!")
@@ -179,7 +237,7 @@ def save_bronze_output(df, output_path):
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     
-    df.to_csv(output_path, index=False, encoding='utf-8')
+    df.to_csv(output_path, index=False, encoding='utf-8', sep=';')
 
     logger.info(f"Total de registros: {len(df)}")
     logger.info(f"Registro Agibank: {df['is_agibank'].sum()}")
