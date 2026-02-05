@@ -250,6 +250,7 @@ def bronze_dag():
     """DAG principal da camada bronze"""
     logger.info("Iniciando DAG Bronze...")
     start_time = datetime.now()
+    version = 1
 
     try:
         consumidor_files = validate_files()
@@ -259,7 +260,7 @@ def bronze_dag():
 
             df_consumidor, issues = process_consumidor_gov()
 
-            save_bronze_output(df_consumidor, "../data/silver/consumidor_gov_bronze.csv")
+            save_bronze_output(df_consumidor, f"../data/silver/consumidor_gov_bronze_v{version+1}.csv")
 
             end_time = datetime.now()
             duration = end_time - start_time

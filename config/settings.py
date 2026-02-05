@@ -51,6 +51,11 @@ CONSUMIDOR_GOV_DELETE_COLUMNS = {
         'Data Análise',
         'Data Recusa',
         'Prazo Analise Gestor',
+        'Análise da Recusa', 
+        'Interação com Judiciario', 
+        'Último Complemento Consumidor', 
+        'Canal de Origem', 
+        'Gestor'
     ]
 }
 
