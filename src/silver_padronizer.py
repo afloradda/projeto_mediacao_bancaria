@@ -6,9 +6,9 @@ from datetime import datetime
 import sys
 
 sys.path.append('..')
-from config.settings import QUALITY_CHECKS, AGIBANK_FILTERS, TEMPORAL_COLUMNS_CONFIG
+from config.settings import TEMPORAL_COLUMNS_CONFIG
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(messages)s')
+logging.basicConfig( level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -30,34 +30,44 @@ def load_bronze_data():
 def standardize_column_names(df):
     """Task 2: Padronizar nomes das colunas"""
     logger.info("Padronizando nomes das colunas...")
+    
+    # Validação de entrada
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError(f"Esperado DataFrame, recebido {type(df)}")
 
     original_columns = df.columns.tolist()
 
-    
-    df.columns = df.columns.str.strip()
+    # Aplicar transformações nas colunas
+    df.columns = (
+        df.columns
+        .str.strip()
+        .str.replace(' ', '_', regex=False)
+        .str.replace('__+', '_', regex=True)
+        .str.normalize('NFD')
+        .str.encode('ascii', errors='ignore')
+        .str.decode('ascii')
+        .str.lower()
+    )
 
-    df.columns = df.columns.str.replace(' ', '_')
-    df.columns = df.columns.str.replace('__+', '_', regex=True)
+    # Criar mapeamento de mudanças
+    column_mapping = dict(zip(original_columns, df.columns))
+    key_changes = {old: new for old, new in column_mapping.items() if old != new}
 
-    df.columns = df.columns.str.normalize('NFD').str.encode('ascii', errors='ignore').str.decode('ascii')
-    # Exemplo transformação: Região -> Regia\u0303o -> b'Regiao' -> Regiao
-
-    df.columns = df.columns.str.lower()
-
-    column_mapping = dict(zip(original_columns, df.columns)) # zip() combina as listas e dict transforma em dicionário 
-
-    key_changes = {}
-    for old, new in column_mapping.items():
-        if old != new:
-            key_changes[old] = new
-    # Equivalente a: key_changes = {old: new for old, new in column_mapping.items() if old != new}
-
-    if key_changes:
-        logger.info("Principais mudanças nas colunas:")
-        for old, new in list (key_changes.items())[:5]:
+    # Log das mudanças (se houver)
+    num_changes = len(key_changes)
+    if num_changes > 0:
+        logger.info(f"Principais mudanças nas colunas ({num_changes} total):")
+        for old, new in list(key_changes.items())[:5]:
             logger.info(f"  {old} -> {new}")
+    else:
+        logger.info("Nenhuma mudança necessária nas colunas")
     
     logger.info(f"✅ Colunas padronizadas: {len(df.columns)} colunas")
+    
+    # Validação de saída
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError(f"Função retornando {type(df)} ao invés de DataFrame")
+    
     return df
 
 def convert_temporal_columns(df):
@@ -109,34 +119,36 @@ def convert_categorical_columns(df):
     """Task 4: Converter colunas apropriadas para category"""
     logger.info("🏷️ Convertendo colunas categóricas...")
     
-    # Candidatas automáticas (baixa cardinalidade)
     categorical_candidates = ['regiao', 'uf', 'sexo', 'respondida', 'situacao', 'data_source']
     
     for col in categorical_candidates:
+        # 🔧 CORREÇÃO: Verificação segura
         if col in df.columns:
-            unique_count = df[col].nunique()
-            total_count = len(df)
-            ratio = unique_count / total_count
-            
-            # Se menos de 1% de valores únicos, converter para category
-            if ratio < 0.01:
-                df[col] = df[col].astype('category')
-                logger.info(f"   🏷️ {col}: {unique_count} categorias ({ratio:.2%})")
+            # Verifica se o DataFrame não está vazio
+            if df.shape[0] > 0:  # ✅ Mais seguro que len(df) > 0
+                unique_count = df[col].nunique()
+                total_count = len(df)
+                ratio = unique_count / total_count if total_count > 0 else 0
+                
+                if ratio < 0.01:
+                    df[col] = df[col].astype('category')
+                    logger.info(f"   🏷️ {col}: {unique_count} categorias ({ratio:.2%})")
     
     return df
 
 def final_cleanup(df):
     """Task 5: Limpeza final - duplicatas"""
-    logger.info("🧹 Limpeza final...")
+    logger.info(" Limpeza final...")
     
     original_rows = len(df)
     df_clean = df.drop_duplicates()
     duplicates_removed = original_rows - len(df_clean)
     
     if duplicates_removed > 0:
-        logger.info(f"   🗑️ Duplicatas finais removidas: {duplicates_removed:,}")
+        logger.info(f"    Duplicatas finais removidas: {duplicates_removed:,}")
     
     return df_clean
+
 
 def silver_dag():
     """DAG principal da camada silver"""
@@ -149,40 +161,39 @@ def silver_dag():
         logger.info("Carregando dados Bronze...")
         df = load_bronze_data()
 
-        if df:
-            logger.info("   Padronizando colunas...")
-            df = standardize_column_names(df)
+        logger.info("   Padronizando colunas...")
+        df = standardize_column_names(df)
 
-            logger.info("   Convertendo colunas temporais...")
-            df, conversion_stats = convert_temporal_columns(df)
+        logger.info("   Convertendo colunas temporais...")
+        df, conversion_stats = convert_temporal_columns(df)
 
-            logger.info("   Convertendo colunas categóricas...")
-            df = convert_categorical_columns(df)
+        logger.info("   Convertendo colunas categóricas...")
+        df = convert_categorical_columns(df)
 
-            logger.info("   Limpeza final (eliminação de duplicatas)...")
-            df = final_cleanup(df)
+        logger.info("   Limpeza final (eliminação de duplicatas)...")
+        df = final_cleanup(df)
 
 
-            # Salvar resultado Silver
-            output_path = f"../data/silver/consumidor_gov_silver_v{version + 1}.csv"
-            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(output_path, index=False, encoding='utf-8', sep=';')
+        # Salvar resultado Silver
+        output_path = f"../data/silver/consumidor_gov_silver_v{version + 1}.csv"
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(output_path, index=False, encoding='utf-8', sep=';')
 
-            end_time = datetime.now()
-            duration = end_time - start_time
+        end_time = datetime.now()
+        duration = end_time - start_time
 
-            logger.info("-"*70)
-            logger.info("RELATÓRIO SILVER DAG \n")
-            logger.info(f"Duração: {duration}")
-            logger.info(f"Registros processados: {len(df):,}")
-            logger.info(f"Colunas finais: {len(df.columns)}")
-            logger.info(f"\nRegistros Agibank: {df['is_agibank'].sum():,}")
-            logger.info(f"\nConversões temporais: {sum(1 for s in conversion_stats.values() if s['success_rate'] > 0)}")
-            logger.info(f"\nArquivo salvo: {output_path}")
-            logger.info(f"✅    Silver DAG concluído    ")
-            logger.info("-"*70)
+        logger.info("-"*70)
+        logger.info("RELATÓRIO SILVER DAG \n")
+        logger.info(f"Duração: {duration}")
+        logger.info(f"Registros processados: {len(df):,}")
+        logger.info(f"Colunas finais: {len(df.columns)}")
+        logger.info(f"\nRegistros Agibank: {df['is_agibank'].sum():,}")
+        logger.info(f"\nConversões temporais: {sum(1 for s in conversion_stats.values() if s['success_rate'] > 0)}")
+        logger.info(f"\nArquivo salvo: {output_path}")
+        logger.info(f"✅    Silver DAG concluído    ")
+        logger.info("-"*70)
         
-        return df, output_path  # Retornar df e caminho para usar no Gold
+        return df
 
     except Exception as e:
         logger.error(f"Error DAG Silver: {str(e)}")
