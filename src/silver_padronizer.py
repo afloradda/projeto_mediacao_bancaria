@@ -105,6 +105,38 @@ def convert_temporal_columns(df):
 
     return df, conversion_stats
 
+def convert_categorical_columns(df):
+    """Task 4: Converter colunas apropriadas para category"""
+    logger.info("🏷️ Convertendo colunas categóricas...")
+    
+    # Candidatas automáticas (baixa cardinalidade)
+    categorical_candidates = ['regiao', 'uf', 'sexo', 'respondida', 'situacao', 'data_source']
+    
+    for col in categorical_candidates:
+        if col in df.columns:
+            unique_count = df[col].nunique()
+            total_count = len(df)
+            ratio = unique_count / total_count
+            
+            # Se menos de 1% de valores únicos, converter para category
+            if ratio < 0.01:
+                df[col] = df[col].astype('category')
+                logger.info(f"   🏷️ {col}: {unique_count} categorias ({ratio:.2%})")
+    
+    return df
+
+def final_cleanup(df):
+    """Task 5: Limpeza final - duplicatas"""
+    logger.info("🧹 Limpeza final...")
+    
+    original_rows = len(df)
+    df_clean = df.drop_duplicates()
+    duplicates_removed = original_rows - len(df_clean)
+    
+    if duplicates_removed > 0:
+        logger.info(f"   🗑️ Duplicatas finais removidas: {duplicates_removed:,}")
+    
+    return df_clean
 
 def silver_dag():
     """DAG principal da camada silver"""
@@ -113,24 +145,49 @@ def silver_dag():
     version = 0
 
     try: 
-        bronze_files = load_bronze_data()
+        # Pipeline Silver
+        logger.info("Carregando dados Bronze...")
+        df = load_bronze_data()
 
-        if bronze_files:
+        if df:
+            logger.info("   Padronizando colunas...")
+            df = standardize_column_names(df)
 
+            logger.info("   Convertendo colunas temporais...")
+            df, conversion_stats = convert_temporal_columns(df)
+
+            logger.info("   Convertendo colunas categóricas...")
+            df = convert_categorical_columns(df)
+
+            logger.info("   Limpeza final (eliminação de duplicatas)...")
+            df = final_cleanup(df)
+
+
+            # Salvar resultado Silver
+            output_path = f"../data/silver/consumidor_gov_silver_v{version + 1}.csv"
+            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+            df.to_csv(output_path, index=False, encoding='utf-8', sep=';')
 
             end_time = datetime.now()
             duration = end_time - start_time
 
             logger.info("-"*70)
-            logger.info("RELATÓRIO BRONZE DAG \n")
+            logger.info("RELATÓRIO SILVER DAG \n")
             logger.info(f"Duração: {duration}")
+            logger.info(f"Registros processados: {len(df):,}")
+            logger.info(f"Colunas finais: {len(df.columns)}")
+            logger.info(f"\nRegistros Agibank: {df['is_agibank'].sum():,}")
+            logger.info(f"\nConversões temporais: {sum(1 for s in conversion_stats.values() if s['success_rate'] > 0)}")
+            logger.info(f"\nArquivo salvo: {output_path}")
+            logger.info(f"✅    Silver DAG concluído    ")
             logger.info("-"*70)
+        
+        return df, output_path  # Retornar df e caminho para usar no Gold
 
     except Exception as e:
-        logger.error(f"Error DAG Bronze: {str(e)}")
+        logger.error(f"Error DAG Silver: {str(e)}")
         raise
 
-    pass
 
 if __name__ == "__main__":
     silver_dag()
