@@ -73,3 +73,19 @@ AGIBANK_FILTERS = {
         'AGIBANK S.A.'
     ]
 }
+
+# ==========================================
+# COLUNAS TEMPORAIS
+# ==========================================
+
+TEMPORAL_COLUMNS_CONFIG = {
+    'datetime_columns': [
+        'data_abertura',
+        'data_resposta', 
+        'data_finalizacao',
+        'prazo_resposta',
+        'processed_at'
+    ],
+    'default_format': '%d/%m/%Y',  # Formato padrão brasileiro
+    'processed_at_format': '%Y-%m-%d %H:%M:%S.%f'
+}

@@ -6,7 +6,7 @@ from datetime import datetime
 import sys
 
 sys.path.append('..')
-from config.settings import QUALITY_CHECKS, AGIBANK_FILTERS
+from config.settings import QUALITY_CHECKS, AGIBANK_FILTERS, TEMPORAL_COLUMNS_CONFIG
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(messages)s')
 logger = logging.getLogger(__name__)
@@ -35,15 +35,22 @@ def standardize_column_names(df):
 
     
     df.columns = df.columns.str.strip()
+
     df.columns = df.columns.str.replace(' ', '_')
-    df.columns = df.columns.str.replace('_', '_')
+    df.columns = df.columns.str.replace('__+', '_', regex=True)
 
     df.columns = df.columns.str.normalize('NFD').str.encode('ascii', errors='ignore').str.decode('ascii')
+    # Exemplo transformação: Região -> Regia\u0303o -> b'Regiao' -> Regiao
 
     df.columns = df.columns.str.lower()
 
-    column_mapping = dict(zip(original_columns, df.columns))
-    key_changes = {old: new for old, new in column_mapping.items() if old != new}
+    column_mapping = dict(zip(original_columns, df.columns)) # zip() combina as listas e dict transforma em dicionário 
+
+    key_changes = {}
+    for old, new in column_mapping.items():
+        if old != new:
+            key_changes[old] = new
+    # Equivalente a: key_changes = {old: new for old, new in column_mapping.items() if old != new}
 
     if key_changes:
         logger.info("Principais mudanças nas colunas:")
@@ -52,6 +59,51 @@ def standardize_column_names(df):
     
     logger.info(f"✅ Colunas padronizadas: {len(df.columns)} colunas")
     return df
+
+def convert_temporal_columns(df):
+    """Task 3: Converter colunas temporais"""
+    logger.info("Convertendo colunas temporais...")
+
+    datetime_columns = TEMPORAL_COLUMNS_CONFIG['datetime_columns']
+    conversion_stats = {}
+
+    for col in datetime_columns:
+        if col not in df.columns:
+            logger.warning(f"   Coluna '{col}' não encontrada")
+            continue
+
+        logger.info(f"  Convertendo: {col}")
+
+        non_null_before = df[col].notna().sum()
+
+        df[col] = df[col].astype(str).str.strip()
+        df[col] = df[col].replace(['', 'nan', 'NaN', 'NULL', 'null', 'None'], pd.NaT)
+
+        try:
+            if col == 'processed_at':
+                df[col] = pd.to_datetime(df[col], errors='coerce')
+            else:
+                df[col] = pd.to_datetime(df[col], errors='coerce', dayfirst=True)
+
+            non_null_after = df[col].notna().sum()
+            success_rate = (non_null_after / non_null_before * 100) if non_null_before > 0 else 0
+
+            conversion_stats[col] = {
+                'before': non_null_before,
+                'after': non_null_after,
+                'success_rate': success_rate
+            }
+
+            logger.info(f"  {non_null_before:,} -> {non_null_after:,} ({success_rate:.1f}% sucesso)")
+        
+        except Exception as e:
+            logger.error(f" Erro convertendo '{col}': {str(e)}")
+            conversion_stats[col] = {'before': non_null_before, 'after': 0, 'success_rate': 0}
+
+    sucessful = sum(1 for stats in conversion_stats.values() if stats['success_rate'] > 0)
+    logger.info(f"✅ Conversão temporais: {sucessful}/{len(conversion_stats)} bem-sucessidas")
+
+    return df, conversion_stats
 
 
 def silver_dag():
