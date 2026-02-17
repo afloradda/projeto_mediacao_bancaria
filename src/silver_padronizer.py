@@ -154,7 +154,7 @@ def silver_dag():
     """DAG principal da camada silver"""
     logger.info("Iniciando DAG Silver...")
     start_time = datetime.now()
-    version = 0
+    version = 2
 
     try: 
         # Pipeline Silver
@@ -175,7 +175,7 @@ def silver_dag():
 
 
         # Salvar resultado Silver
-        output_path = f"../data/silver/consumidor_gov_silver_v{version + 1}.csv"
+        output_path = f"../data/silver/consumidor_gov_silver_v{version}.csv"
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(output_path, index=False, encoding='utf-8', sep=';')
 

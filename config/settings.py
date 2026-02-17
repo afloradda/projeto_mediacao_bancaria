@@ -89,3 +89,24 @@ TEMPORAL_COLUMNS_CONFIG = {
     'default_format': '%d/%m/%Y',  # Formato padrão brasileiro
     'processed_at_format': '%Y-%m-%d %H:%M:%S.%f'
 }
+
+# ==========================================
+# CONFIGURAÇÕES GOLD - RECORTES SP
+# ==========================================
+
+
+SP_CITIES_CONFIG = {
+    'max_cities': 645,                    
+    'validate_suspicious': True,
+    'min_records_per_city': 5,           
+    'show_low_frequency': True
+}
+
+AGE_GROUPS_CONFIG = {
+    'target_groups': ['entre 31 a 40 anos', 'entre 41 a 50 anos', 'entre 21 a 30 anos']
+}
+
+BUSINESS_SECTORS_CONFIG = {
+    'banking_keywords': ['banco', 'financeira', 'administradora', 'cartão'],
+    'focus_problems': ['cobrança', 'atendimento', 'produto', 'serviço']
+}
