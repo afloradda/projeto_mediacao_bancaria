@@ -1,0 +1,181 @@
+
+================================================================================
+                    ORIENTAÇÕES PARA ANÁLISE DE BI
+                     Projeto Mediação Bancária - Agibank
+================================================================================
+
+🎯 OBJETIVO DO PROJETO:
+Analisar reclamações do Consumidor.gov.br focando em São Paulo para:
+- Identificar principais dores dos clientes Agibank
+- Comparar Agibank com concorrentes do setor bancário
+- Encontrar oportunidades de melhoria e expansão
+
+================================================================================
+📁 DATASETS DISPONÍVEIS PARA ANÁLISE
+================================================================================
+
+📍 LOCALIZAÇÃO DOS ARQUIVOS:
+c:\Users\ana.leandro\Desktop\projeto_mediacao_bancaria\data\gold\
+
+📊 DATASETS PRINCIPAIS:
+
+1. 📄 sp_consumidor_completo_v1.csv (289.6 MB)
+   • 649,557 registros de São Paulo (limpos e validados)
+   • 32 colunas disponíveis
+   • Contém TODOS os dados para análise exploratória
+   • Use este para análises gerais e cruzamentos de dados
+
+2. 🏦 sp_agibank_only_v1.csv (1.9 MB)
+   • Aproximadamente 1,500-2,000 registros apenas do Agibank
+   • Mesmo formato do dataset principal
+   • Use para análises específicas do banco
+   • Perfeito para storytelling focado no Agibank
+
+3. 🗺️ sp_ranking_cidades_v1.csv
+   Colunas principais:
+   • cidade: Nome da cidade
+   • total_reclamacoes: Total de reclamações por cidade
+   • reclamacoes_agibank: Quantas são do Agibank
+   • percentual_agibank: % Agibank na cidade
+   • taxa_resposta_pct: % de reclamações respondidas
+
+   📊 Use para:
+   - Mapas de calor por cidade
+   - Ranking de cidades problemáticas
+   - Comparar presença Agibank por região
+
+4. 👥 sp_analise_etaria_v1.csv
+   Colunas principais:
+   • faixa_etaria: Faixa etária do consumidor
+   • total_reclamacoes: Total por faixa etária
+   • reclamacoes_agibank: Reclamações Agibank por faixa
+   • percentual_total: % do total geral
+   • percentual_agibank: % Agibank na faixa etária
+   • taxa_resposta_pct: Taxa de resposta por idade
+
+   📊 Use para:
+   - Perfil demográfico dos clientes
+   - Identificar faixa etária alvo do Agibank
+   - Comparar comportamento por idade
+
+5. 🏢 sp_setorial_segments_v1.csv
+   • Análise por segmento de mercado
+   • Identifica principais setores com reclamações
+   • Posição do setor bancário vs outros setores
+
+   📊 Use para:
+   - Contexto de mercado geral
+   - Benchmark setorial
+
+6. ⚠️ sp_setorial_problems_general_v1.csv
+   • Lista todos os tipos de problemas relatados
+   • Frequência geral vs Agibank específico
+   • Identifica principais dores dos clientes
+
+   📊 Use para:
+   - Identificar problemas mais críticos
+   - Comparar Agibank vs mercado
+   - Priorizar melhorias de produto/serviço
+
+================================================================================
+🎯 SUGESTÕES DE ANÁLISES E VISUALIZAÇÕES
+================================================================================
+
+📈 ANÁLISES PRIORITÁRIAS:
+
+1. 🏆 TOP 10 CIDADES COM MAIS RECLAMAÇÕES AGIBANK
+   - Gráfico de barras horizontal
+   - Identifica onde focar melhorias regionais
+   - Dataset: sp_ranking_cidades_v1.csv
+
+2. 👥 PERFIL ETÁRIO: AGIBANK VS MERCADO
+   - Gráfico de barras comparativo
+   - Mostra diferenças no perfil de clientes
+   - Dataset: sp_analise_etaria_v1.csv
+
+3. ⚠️ TOP 5 PROBLEMAS MAIS FREQUENTES NO AGIBANK
+   - Gráfico de pizza ou barras
+   - Prioriza ações de melhoria
+   - Dataset: sp_setorial_problems_general_v1.csv
+
+4. 📊 TAXA DE RESPOSTA: AGIBANK VS CONCORRENTES
+   - Gráfico de barras comparativo
+   - Avalia qualidade do atendimento
+   - Dataset: sp_ranking_cidades_v1.csv
+
+5. 🗺️ MAPA DE CALOR: CONCENTRAÇÃO AGIBANK EM SP
+   - Mapa interativo ou heatmap
+   - Identifica regiões de maior/menor presença
+   - Dataset: sp_ranking_cidades_v1.csv
+
+================================================================================
+🔍 PERGUNTAS DE NEGÓCIO PARA RESPONDER
+================================================================================
+
+📋 QUESTÕES ESTRATÉGICAS:
+
+1. 🏙️ REGIONAL:
+   • Em quais cidades o Agibank tem mais problemas?
+   • Onde a taxa de resposta do Agibank é menor?
+   • Quais regiões têm baixa presença Agibank (oportunidade)?
+
+2. 👥 DEMOGRÁFICA:
+   • Qual faixa etária reclama mais do Agibank?
+   • O perfil etário do Agibank difere do mercado?
+   • Que faixa etária o Agibank pode explorar mais?
+
+3. ⚠️ OPERACIONAL:
+   • Quais os principais problemas dos clientes Agibank?
+   • Esses problemas são únicos do Agibank ou do setor?
+   • Qual problema tem maior impacto no volume de reclamações?
+
+4. 🏆 COMPETITIVA:
+   • O Agibank responde melhor ou pior que a concorrência?
+   • Em que aspectos o Agibank se destaca positivamente?
+   • Onde há oportunidade de melhoria vs concorrentes?
+
+5. 💼 ESTRATÉGICA:
+   • Onde o Agibank pode expandir com menor risco?
+   • Que segmento de cliente priorizar?
+   • Quais melhorias teriam maior impacto?
+
+================================================================================
+📊 DICAS TÉCNICAS PARA VISUALIZAÇÃO
+================================================================================
+
+🎨 SUGESTÕES DE GRÁFICOS:
+
+• Mapas de Calor: Para distribuição geográfica
+• Gráficos de Barras: Para comparações e rankings
+• Gráficos de Pizza: Para composição de problemas
+• Gráficos de Linha: Para tendências temporais (se usar datas)
+• Dashboards Interativos: Para exploração pelos stakeholders
+
+🔧 FERRAMENTAS RECOMENDADAS:
+• Power BI, Tableau, ou Python (matplotlib/seaborn)
+• Excel para análises rápidas
+• Google Data Studio para dashboards web
+
+📋 ESTRUTURA DE APRESENTAÇÃO SUGERIDA:
+1. Contexto e Objetivos
+2. Visão Geral dos Dados SP
+3. Análise Específica Agibank
+4. Comparação com Concorrentes
+5. Principais Achados e Oportunidades
+6. Recomendações Estratégicas
+
+================================================================================
+📞 SUPORTE TÉCNICO
+================================================================================
+
+🤝 CONTATO:
+Para dúvidas sobre os dados ou estrutura dos arquivos, entre em contato
+com a equipe de Engenharia de Dados do projeto.
+
+📅 DADOS ATUALIZADOS EM: Fevereiro 2026
+🔄 VERSÃO DOS DATASETS: v1
+📊 TOTAL DE REGISTROS PROCESSADOS: 2.567.095 (Brasil) | 649.557 (SP)
+
+================================================================================
+                              BOA ANÁLISE! 🚀
+================================================================================
