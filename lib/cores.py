@@ -4,6 +4,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List
 
+# ============================================================
+# PALETAS DE CORES AGIBANK
+# ============================================================
 
 CORES_AGIBANK = {
     'azul_principal': '#0064f5',
@@ -35,6 +38,18 @@ PALETA_VERDE = [
     CORES_AGIBANK['verde_claro']
 ]
 
+# ============================================================
+# PALETAS PARA PLOTLY (mesmo esquema de cores)
+# ============================================================
+
+PLOTLY_COLORS = CORES_AGIBANK
+PLOTLY_PALETTE = PALETA_CATEGORICA
+PLOTLY_SCALE_AZUL = PALETA_AZUL
+PLOTLY_SCALE_VERDE = PALETA_VERDE
+
+# ============================================================
+# FUNÇÕES AUXILIARES
+# ============================================================
 
 def get_cor(nome: str) -> str:
     """Retorna cor do dicionario CORES_AGIBANK"""
@@ -42,7 +57,7 @@ def get_cor(nome: str) -> str:
 
 
 def configurar_estilo(tamanho: str = 'medio', paleta: List[str] = None):
-    """Configura estilo dos graficos"""
+    """Configura estilo dos graficos Matplotlib/Seaborn"""
     tamanhos = {
         'pequeno': (8, 5),
         'medio': (12, 6),
@@ -66,9 +81,30 @@ def configurar_estilo(tamanho: str = 'medio', paleta: List[str] = None):
 
 
 def aplicar_tema_agibank(tamanho: str = 'medio'):
-    """Aplica tema visual Agibank aos graficos"""
+    """Aplica tema visual Agibank aos graficos Matplotlib/Seaborn"""
     configurar_estilo(tamanho, PALETA_CATEGORICA)
     print(f"Tema Agibank aplicado - Tamanho: {tamanho}")
 
+
+def configurar_plotly():
+    """Configura tema Agibank para Plotly"""
+    try:
+        import plotly.express as px
+        
+        px.defaults.template = "plotly_white"
+        px.defaults.color_discrete_sequence = PLOTLY_PALETTE
+        px.defaults.width = 900
+        px.defaults.height = 500
+        
+        print("Tema Agibank aplicado ao Plotly")
+        return True
+    except ImportError:
+        print("Plotly nao esta instalado")
+        return False
+
+
+# ============================================================
+# AUTO-APLICAR TEMA MATPLOTLIB
+# ============================================================
 
 aplicar_tema_agibank()
