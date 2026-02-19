@@ -1,6 +1,9 @@
+# lib/cores.py
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List
+
 
 CORES_AGIBANK = {
     'azul_principal': '#0064f5',
@@ -32,10 +35,14 @@ PALETA_VERDE = [
     CORES_AGIBANK['verde_claro']
 ]
 
+
 def get_cor(nome: str) -> str:
+    """Retorna cor do dicionario CORES_AGIBANK"""
     return CORES_AGIBANK.get(nome, CORES_AGIBANK['azul_principal'])
 
+
 def configurar_estilo(tamanho: str = 'medio', paleta: List[str] = None):
+    """Configura estilo dos graficos"""
     tamanhos = {
         'pequeno': (8, 5),
         'medio': (12, 6),
@@ -57,8 +64,11 @@ def configurar_estilo(tamanho: str = 'medio', paleta: List[str] = None):
     plt.rcParams['figure.facecolor'] = 'white'
     plt.rcParams['grid.alpha'] = 0.3
 
+
 def aplicar_tema_agibank(tamanho: str = 'medio'):
+    """Aplica tema visual Agibank aos graficos"""
     configurar_estilo(tamanho, PALETA_CATEGORICA)
     print(f"Tema Agibank aplicado - Tamanho: {tamanho}")
+
 
 aplicar_tema_agibank()
