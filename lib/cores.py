@@ -4,10 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List
 
-# ============================================================
-# PALETAS DE CORES AGIBANK
-# ============================================================
-
 CORES_AGIBANK = {
     'azul_principal': '#0064f5',
     'azul_medio': '#0053b0',
@@ -38,18 +34,12 @@ PALETA_VERDE = [
     CORES_AGIBANK['verde_claro']
 ]
 
-# ============================================================
-# PALETAS PARA PLOTLY (mesmo esquema de cores)
-# ============================================================
 
 PLOTLY_COLORS = CORES_AGIBANK
 PLOTLY_PALETTE = PALETA_CATEGORICA
 PLOTLY_SCALE_AZUL = PALETA_AZUL
 PLOTLY_SCALE_VERDE = PALETA_VERDE
 
-# ============================================================
-# FUNÇÕES AUXILIARES
-# ============================================================
 
 def get_cor(nome: str) -> str:
     """Retorna cor do dicionario CORES_AGIBANK"""
@@ -101,10 +91,5 @@ def configurar_plotly():
     except ImportError:
         print("Plotly nao esta instalado")
         return False
-
-
-# ============================================================
-# AUTO-APLICAR TEMA MATPLOTLIB
-# ============================================================
 
 aplicar_tema_agibank()
