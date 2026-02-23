@@ -1,3 +1,5 @@
+# lib/carregamento.py
+
 import pandas as pd
 from pathlib import Path
 
@@ -10,6 +12,7 @@ CAMINHO_GOLD = CAMINHO_DATA / 'gold'
 ARQUIVO_SILVER_PADRAO = 'consumidor_gov_silver_v1.csv'
 ARQUIVO_SP_COMPLETO = 'sp_consumidor_completo_v1.csv'
 ARQUIVO_SP_AGIBANK = 'sp_agibank_only_v1.csv'
+ARQUIVO_SP_SETORIAL = 'sp_setorial_segments_v1.csv'
 
 
 def carregar_base_silver(caminho: str = None) -> pd.DataFrame:
@@ -40,7 +43,7 @@ def carregar_base_silver(caminho: str = None) -> pd.DataFrame:
 
 
 def carregar_base_gold_sp(caminho: str = None) -> pd.DataFrame:
-    """Carrega base Gold (Sao Paulo completo)"""
+    """Carrega base Gold (Sao Paulo completo) com detecção automática de separador"""
     if caminho is None:
         caminho = CAMINHO_GOLD / ARQUIVO_SP_COMPLETO
     else:
@@ -51,13 +54,80 @@ def carregar_base_gold_sp(caminho: str = None) -> pd.DataFrame:
     if not caminho.exists():
         raise FileNotFoundError(f"Arquivo nao encontrado: {caminho}")
     
+    # Detecta o separador lendo a primeira linha
+    with open(caminho, 'r', encoding='utf-8') as f:
+        primeira_linha = f.readline()
+        
+        if primeira_linha.count(';') > primeira_linha.count(','):
+            sep = ';'
+        elif primeira_linha.count(',') > primeira_linha.count(';'):
+            sep = ','
+        elif '\t' in primeira_linha:
+            sep = '\t'
+        else:
+            sep = ','  # Padrão
+    
+    print(f"Separador detectado: '{sep}'")
+    
+    # Lista de configurações para tentar
+    configs = [
+        # Tentativa 1: Engine C com separador detectado
+        {
+            'sep': sep,
+            'encoding': 'utf-8',
+            'on_bad_lines': 'skip',
+            'low_memory': False
+        },
+        # Tentativa 2: Engine Python (mais tolerante)
+        {
+            'sep': sep,
+            'encoding': 'utf-8',
+            'on_bad_lines': 'skip',
+            'engine': 'python'
+        },
+        # Tentativa 3: Latin-1 encoding
+        {
+            'sep': sep,
+            'encoding': 'latin-1',
+            'on_bad_lines': 'skip',
+            'low_memory': False
+        }
+    ]
+    
+    # Tenta cada configuração
+    for i, config in enumerate(configs, 1):
+        try:
+            print(f"Tentativa {i}...")
+            df = pd.read_csv(caminho, **config)
+            print(f"✅ Base SP carregada com sucesso (tentativa {i})!")
+            print(f"Registros: {len(df):,}")
+            print(f"Colunas: {len(df.columns)}")
+            return df
+        except Exception as e:
+            print(f"❌ Tentativa {i} falhou: {str(e)[:80]}")
+            if i == len(configs):
+                raise Exception(f"Todas as tentativas falharam. Último erro: {e}")
+
+
+def carregar_base_setorial(caminho: str = None) -> pd.DataFrame:
+    """Carrega base Setorial (Gold)"""
+    if caminho is None:
+        caminho = CAMINHO_GOLD / ARQUIVO_SP_SETORIAL
+    else:
+        caminho = Path(caminho)
+    
+    print(f"Carregando base setorial de: {caminho}")
+    
+    if not caminho.exists():
+        raise FileNotFoundError(f"Arquivo nao encontrado: {caminho}")
+    
     df = pd.read_csv(
         caminho,
         encoding='utf-8',
         low_memory=False
     )
     
-    print(f"Base SP carregada com sucesso!")
+    print(f"Base setorial carregada com sucesso!")
     print(f"Registros: {len(df):,}")
     print(f"Colunas: {len(df.columns)}")
     
