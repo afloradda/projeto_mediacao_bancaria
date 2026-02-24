@@ -110,7 +110,7 @@ def carregar_base_gold_sp(caminho: str = None) -> pd.DataFrame:
 
 
 def carregar_base_setorial(caminho: str = None) -> pd.DataFrame:
-    """Carrega base Setorial (Gold)"""
+    """Carrega base Setorial (Gold) com detecção automática de separador"""
     if caminho is None:
         caminho = CAMINHO_GOLD / ARQUIVO_SP_SETORIAL
     else:
@@ -121,9 +121,24 @@ def carregar_base_setorial(caminho: str = None) -> pd.DataFrame:
     if not caminho.exists():
         raise FileNotFoundError(f"Arquivo nao encontrado: {caminho}")
     
+    # Detecta o separador
+    with open(caminho, 'r', encoding='utf-8') as f:
+        primeira_linha = f.readline()
+        
+        if primeira_linha.count(';') > primeira_linha.count(','):
+            sep = ';'
+        elif primeira_linha.count(',') > primeira_linha.count(';'):
+            sep = ','
+        else:
+            sep = ','
+    
+    print(f"Separador detectado: '{sep}'")
+    
     df = pd.read_csv(
         caminho,
+        sep=sep,
         encoding='utf-8',
+        on_bad_lines='skip',
         low_memory=False
     )
     
@@ -135,7 +150,7 @@ def carregar_base_setorial(caminho: str = None) -> pd.DataFrame:
 
 
 def carregar_base_agibank(caminho: str = None) -> pd.DataFrame:
-    """Carrega base Agibank (Gold)"""
+    """Carrega base Agibank (Gold) com detecção automática de separador"""
     if caminho is None:
         caminho = CAMINHO_GOLD / ARQUIVO_SP_AGIBANK
     else:
@@ -146,17 +161,59 @@ def carregar_base_agibank(caminho: str = None) -> pd.DataFrame:
     if not caminho.exists():
         raise FileNotFoundError(f"Arquivo nao encontrado: {caminho}")
     
-    df = pd.read_csv(
-        caminho,
-        encoding='utf-8',
-        low_memory=False
-    )
+    # Detecta o separador lendo a primeira linha
+    with open(caminho, 'r', encoding='utf-8') as f:
+        primeira_linha = f.readline()
+        
+        if primeira_linha.count(';') > primeira_linha.count(','):
+            sep = ';'
+        elif primeira_linha.count(',') > primeira_linha.count(';'):
+            sep = ','
+        elif '\t' in primeira_linha:
+            sep = '\t'
+        else:
+            sep = ','  # Padrão
     
-    print(f"Base Agibank carregada com sucesso!")
-    print(f"Registros: {len(df):,}")
-    print(f"Colunas: {len(df.columns)}")
+    print(f"Separador detectado: '{sep}'")
     
-    return df
+    # Lista de configurações para tentar
+    configs = [
+        # Tentativa 1: Engine C com separador detectado
+        {
+            'sep': sep,
+            'encoding': 'utf-8',
+            'on_bad_lines': 'skip',
+            'low_memory': False
+        },
+        # Tentativa 2: Engine Python (mais tolerante)
+        {
+            'sep': sep,
+            'encoding': 'utf-8',
+            'on_bad_lines': 'skip',
+            'engine': 'python'
+        },
+        # Tentativa 3: Latin-1 encoding
+        {
+            'sep': sep,
+            'encoding': 'latin-1',
+            'on_bad_lines': 'skip',
+            'low_memory': False
+        }
+    ]
+    
+    # Tenta cada configuração
+    for i, config in enumerate(configs, 1):
+        try:
+            print(f"Tentativa {i}...")
+            df = pd.read_csv(caminho, **config)
+            print(f"✅ Base Agibank carregada com sucesso (tentativa {i})!")
+            print(f"Registros: {len(df):,}")
+            print(f"Colunas: {len(df.columns)}")
+            return df
+        except Exception as e:
+            print(f"❌ Tentativa {i} falhou: {str(e)[:80]}")
+            if i == len(configs):
+                raise Exception(f"Todas as tentativas falharam. Último erro: {e}")
 
 
 def carregar_base_filtrada(filtro_agibank: bool = None, ano: int = None) -> pd.DataFrame:
