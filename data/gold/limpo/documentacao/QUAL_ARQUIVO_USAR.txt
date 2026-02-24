@@ -1,0 +1,87 @@
+
+╔══════════════════════════════════════════════════════════════════╗
+║                  🎯 QUAL ARQUIVO CSV USAR?                       ║
+║                    GUIA PRÁTICO E DIRETO                         ║
+╚══════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────┐
+│ ❓ O QUE VOCÊ QUER FAZER?                                        │
+└──────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+🇧🇷 ANÁLISES DO BRASIL INTEIRO:
+
+1️⃣  Ver população de TODOS os estados brasileiros
+    📁 USE: brasil/censo2022_estados_completo.csv
+    📊 Contém: 27 estados com população, área, densidade
+    💡 Exemplo: "Qual estado tem mais habitantes?"
+
+2️⃣  Comparar as 5 regiões do Brasil (Norte, Sul, etc)
+    📁 USE: brasil/censo2022_resumo_regioes_brasil.csv
+    📊 Contém: 5 regiões agregadas
+    💡 Exemplo: "Qual região é mais populosa?"
+
+3️⃣  Ver apenas a população total do Brasil
+    📁 USE: brasil/censo2022_brasil_limpo.csv
+    📊 Contém: 1 linha com população total
+    💡 Exemplo: "Quantos habitantes tem o Brasil?"
+
+═══════════════════════════════════════════════════════════════════
+
+🏙️ ANÁLISES DE SÃO PAULO:
+
+4️⃣  Ver TODOS os municípios de SP com detalhes completos
+    📁 USE: sao_paulo/censo2022_sp_consolidado.csv ⭐ RECOMENDADO
+    📊 Contém: 645 municípios + contexto estadual/nacional
+    💡 Exemplo: "Quais municípios fazem parte da RM de Campinas?"
+
+5️⃣  Ver ranking de municípios por tamanho
+    📁 USE: sao_paulo/censo2022_ranking_municipios.csv
+    📊 Contém: 645 municípios ordenados por área
+    💡 Exemplo: "Quais são os 10 maiores municípios?"
+
+6️⃣  Analisar por Região Administrativa (Campinas, Sorocaba, etc)
+    📁 USE: sao_paulo/censo2022_resumo_regioes_administrativas.csv
+    📊 Contém: 16 regiões administrativas agregadas
+    💡 Exemplo: "Quantos municípios tem a RA de Campinas?"
+
+7️⃣  Analisar por Departamento de Saúde (DRS)
+    📁 USE: sao_paulo/censo2022_resumo_drs.csv
+    📊 Contém: 17 DRS agregados
+    💡 Exemplo: "Qual DRS tem mais municípios?"
+
+8️⃣  Ver apenas dados gerais do estado de SP
+    📁 USE: sao_paulo/censo2022_sao_paulo_limpo.csv
+    📊 Contém: 1 linha com dados do estado
+    💡 Exemplo: "Qual a população de São Paulo?"
+
+═══════════════════════════════════════════════════════════════════
+
+📊 TABELA RESUMO RÁPIDA:
+
+┌────────────────────────────────────────┬──────────┬─────────────┐
+│ ARQUIVO                                │ LINHAS   │ MELHOR PARA │
+├────────────────────────────────────────┼──────────┼─────────────┤
+│ censo2022_estados_completo.csv         │    27    │ Estados BR  │
+│ censo2022_resumo_regioes_brasil.csv    │     5    │ Regiões BR  │
+│ censo2022_sp_consolidado.csv           │   645    │ Municípios  │
+│ censo2022_ranking_municipios.csv       │   645    │ Rankings    │
+│ censo2022_resumo_regioes_admin...csv   │    16    │ RAs de SP   │
+│ censo2022_resumo_drs.csv               │    17    │ Saúde SP    │
+└────────────────────────────────────────┴──────────┴─────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+💻 CÓDIGO PRONTO PARA COPIAR:
+
+# Para análises do Brasil:
+df = pd.read_csv('data/limpo/brasil/censo2022_estados_completo.csv')
+
+# Para análises de municípios de SP:
+df = pd.read_csv('data/limpo/sao_paulo/censo2022_sp_consolidado.csv')
+
+# Para rankings:
+df = pd.read_csv('data/limpo/sao_paulo/censo2022_ranking_municipios.csv')
+
+═══════════════════════════════════════════════════════════════════

@@ -1,0 +1,192 @@
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║              💻 EXEMPLOS DE CÓDIGO - PROJETO AGIBANK                     ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════════════
+EXEMPLO 1: CARREGAR DADOS DO CENSO
+═══════════════════════════════════════════════════════════════════════════
+
+import pandas as pd
+import numpy as np
+
+# Estados do Brasil
+df_censo = pd.read_csv('data/limpo/brasil/censo2022_estados_completo.csv')
+print(f"Estados: {len(df_censo)}")
+print(df_censo.columns.tolist())
+
+# Municípios de SP
+df_sp = pd.read_csv('data/limpo/sao_paulo/censo2022_sp_consolidado.csv')
+print(f"Municípios SP: {len(df_sp)}")
+
+# Filtrar Campinas
+campinas = df_sp[df_sp['municipio'] == 'Campinas']
+print(campinas[['municipio', 'area_km2', 'regiao_administrativa']])
+
+═══════════════════════════════════════════════════════════════════════════
+EXEMPLO 2: CRUZAR RECLAMAÇÕES COM POPULAÇÃO (NUMPY)
+═══════════════════════════════════════════════════════════════════════════
+
+# Supondo que você tenha df_reclamacoes com coluna 'UF'
+# Contar reclamações por estado
+rec_por_uf = df_reclamacoes['UF'].value_counts().reset_index()
+rec_por_uf.columns = ['sigla', 'total_reclamacoes']
+
+# Merge com censo
+df_analise = df_censo.merge(rec_por_uf, on='sigla', how='left')
+df_analise['total_reclamacoes'] = df_analise['total_reclamacoes'].fillna(0)
+
+# NUMPY: Calcular taxa por 100 mil habitantes
+df_analise['taxa_rec_100k'] = np.where(
+    df_analise['populacao_2022'] > 0,
+    (df_analise['total_reclamacoes'] / df_analise['populacao_2022']) * 100000,
+    0
+)
+
+print("Top 10 estados com maior taxa:")
+print(df_analise.nlargest(10, 'taxa_rec_100k')[
+    ['uf', 'populacao_2022', 'total_reclamacoes', 'taxa_rec_100k']
+])
+
+═══════════════════════════════════════════════════════════════════════════
+EXEMPLO 3: CLASSIFICAR CRITICIDADE (NUMPY)
+═══════════════════════════════════════════════════════════════════════════
+
+# NUMPY: Classificar estados por nível de criticidade
+df_analise['criticidade'] = np.select(
+    [
+        df_analise['taxa_rec_100k'] > 50,
+        df_analise['taxa_rec_100k'] > 30,
+        df_analise['taxa_rec_100k'] > 10
+    ],
+    ['CRÍTICO', 'ALTO', 'MODERADO'],
+    default='BAIXO'
+)
+
+# Contar por criticidade
+print(df_analise['criticidade'].value_counts())
+
+# Filtrar estados críticos
+criticos = df_analise[df_analise['criticidade'] == 'CRÍTICO']
+print(f"\nEstados críticos: {len(criticos)}")
+print(criticos[['uf', 'taxa_rec_100k', 'total_reclamacoes']])
+
+═══════════════════════════════════════════════════════════════════════════
+EXEMPLO 4: ANÁLISE POR REGIÃO ADMINISTRATIVA (SP)
+═══════════════════════════════════════════════════════════════════════════
+
+# Supondo df_rec_sp com reclamações de SP
+rec_sp_municipio = df_rec_sp['Municipio'].value_counts().reset_index()
+rec_sp_municipio.columns = ['municipio', 'total_reclamacoes']
+
+# Merge com dados de SP
+df_sp_analise = df_sp.merge(rec_sp_municipio, on='municipio', how='left')
+df_sp_analise['total_reclamacoes'] = df_sp_analise['total_reclamacoes'].fillna(0)
+
+# Agrupar por Região Administrativa
+por_ra = df_sp_analise.groupby('regiao_administrativa').agg({
+    'total_reclamacoes': 'sum',
+    'municipio': 'count',
+    'area_km2': 'sum'
+}).reset_index()
+
+por_ra.columns = ['regiao_administrativa', 'total_rec', 'qtd_municipios', 'area_total']
+
+# NUMPY: Calcular densidade de reclamações
+por_ra['rec_por_km2'] = np.where(
+    por_ra['area_total'] > 0,
+    por_ra['total_rec'] / por_ra['area_total'],
+    0
+)
+
+print("Regiões Administrativas com mais reclamações:")
+print(por_ra.nlargest(5, 'total_rec'))
+
+═══════════════════════════════════════════════════════════════════════════
+EXEMPLO 5: ÍNDICE DE GRAVIDADE COMPOSTO (NUMPY)
+═══════════════════════════════════════════════════════════════════════════
+
+# Normalizar variáveis (0 a 1)
+pop_norm = (df_analise['populacao_2022'] - df_analise['populacao_2022'].min()) / \
+           (df_analise['populacao_2022'].max() - df_analise['populacao_2022'].min())
+
+taxa_norm = (df_analise['taxa_rec_100k'] - df_analise['taxa_rec_100k'].min()) / \
+            (df_analise['taxa_rec_100k'].max() - df_analise['taxa_rec_100k'].min())
+
+dens_norm = (df_analise['densidade_hab_km2'] - df_analise['densidade_hab_km2'].min()) / \
+            (df_analise['densidade_hab_km2'].max() - df_analise['densidade_hab_km2'].min())
+
+# NUMPY: Índice composto (pesos: taxa 50%, população 30%, densidade 20%)
+df_analise['indice_gravidade'] = (taxa_norm * 0.5 + pop_norm * 0.3 + dens_norm * 0.2) * 100
+
+print("Estados com maior índice de gravidade:")
+print(df_analise.nlargest(10, 'indice_gravidade')[
+    ['uf', 'indice_gravidade', 'criticidade', 'taxa_rec_100k']
+])
+
+═══════════════════════════════════════════════════════════════════════════
+EXEMPLO 6: FOCO EM CAMPINAS
+═══════════════════════════════════════════════════════════════════════════
+
+# Dados de Campinas
+campinas = df_sp[df_sp['municipio'] == 'Campinas'].iloc[0]
+
+print(f"Município: {campinas['municipio']}")
+print(f"RA: {campinas['regiao_administrativa']}")
+print(f"RM: {campinas['regiao_metropolitana']}")
+print(f"Área: {campinas['area_km2']:.2f} km²")
+
+# Reclamações em Campinas
+rec_campinas = df_rec_sp[df_rec_sp['Municipio'] == 'Campinas']
+print(f"Total de reclamações: {len(rec_campinas)}")
+
+# Comparar com outros municípios da mesma RA
+ra_campinas = df_sp[df_sp['regiao_administrativa'] == campinas['regiao_administrativa']]
+print(f"\nMunicípios na {campinas['regiao_administrativa']}: {len(ra_campinas)}")
+
+═══════════════════════════════════════════════════════════════════════════
+EXEMPLO 7: BENCHMARK AGIBANK VS CONCORRENTES
+═══════════════════════════════════════════════════════════════════════════
+
+# Filtrar reclamações
+df_agibank = df_reclamacoes[df_reclamacoes['is_agibank'] == True]
+df_concorrentes = df_reclamacoes[df_reclamacoes['is_agibank'] == False]
+
+# Agrupar por estado
+agi_por_uf = df_agibank['UF'].value_counts().reset_index()
+agi_por_uf.columns = ['sigla', 'rec_agibank']
+
+conc_por_uf = df_concorrentes['UF'].value_counts().reset_index()
+conc_por_uf.columns = ['sigla', 'rec_concorrentes']
+
+# Merge com censo
+df_benchmark = df_censo.merge(agi_por_uf, on='sigla', how='left')
+df_benchmark = df_benchmark.merge(conc_por_uf, on='sigla', how='left')
+df_benchmark = df_benchmark.fillna(0)
+
+# NUMPY: Calcular taxas
+df_benchmark['taxa_agi_100k'] = np.where(
+    df_benchmark['populacao_2022'] > 0,
+    (df_benchmark['rec_agibank'] / df_benchmark['populacao_2022']) * 100000,
+    0
+)
+
+df_benchmark['taxa_conc_100k'] = np.where(
+    df_benchmark['populacao_2022'] > 0,
+    (df_benchmark['rec_concorrentes'] / df_benchmark['populacao_2022']) * 100000,
+    0
+)
+
+# NUMPY: Comparar desempenho
+df_benchmark['desempenho'] = np.where(
+    df_benchmark['taxa_agi_100k'] < df_benchmark['taxa_conc_100k'],
+    'MELHOR',
+    'PIOR'
+)
+
+print("Estados onde Agibank tem MELHOR desempenho:")
+print(df_benchmark[df_benchmark['desempenho'] == 'MELHOR'][
+    ['uf', 'taxa_agi_100k', 'taxa_conc_100k']
+])
+
+═══════════════════════════════════════════════════════════════════════════

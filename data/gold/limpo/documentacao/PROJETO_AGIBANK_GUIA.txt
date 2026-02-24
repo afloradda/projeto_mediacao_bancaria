@@ -1,0 +1,143 @@
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║           📋 CENSO 2022 - GUIA PARA PROJETO AGIBANK                      ║
+║              Análise de Reclamações + Dados Demográficos                 ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+🎯 CONTEXTO DO PROJETO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROJETO: Análise de Reclamações no Setor Financeiro
+BASES: Consumidor.gov.br + Sindec + Censo 2022
+
+FOCO:
+  • Brasil (contexto geral - menos enfoque)
+  • São Paulo (foco principal - mais enfoque)
+  • Campinas (sede do Agibank)
+  • Agibank vs Concorrentes
+
+OBJETIVO DO CRUZAMENTO COM CENSO:
+  ✓ Calcular taxa de reclamação por habitante
+  ✓ Entender potencial de mercado por região
+  ✓ Priorizar ações por impacto populacional
+  ✓ Identificar regiões críticas
+  ✓ Benchmark regional
+
+═══════════════════════════════════════════════════════════════════════════
+
+📁 QUAL ARQUIVO CSV USAR?
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 1️⃣  ANÁLISE BRASIL (contexto geral)                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+📂 ARQUIVO: brasil/censo2022_estados_completo.csv
+
+📊 CONTÉM:
+   • 27 estados brasileiros
+   • População por estado (Censo 2022)
+   • Área territorial (km²)
+   • Densidade demográfica (hab/km²)
+   • Percentual da população nacional
+   • Sigla e região
+
+💼 USE PARA:
+   ✓ Correlacionar volume de reclamações com população estadual
+   ✓ Calcular taxa de reclamação por 100 mil habitantes
+   ✓ Identificar estados críticos
+   ✓ Priorizar estados para ações corretivas
+   ✓ Comparar desempenho Agibank por estado
+
+📝 CÓDIGO BÁSICO:
+   df_censo = pd.read_csv('data/limpo/brasil/censo2022_estados_completo.csv')
+
+───────────────────────────────────────────────────────────────────────────
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 2️⃣  ANÁLISE SÃO PAULO - MUNICÍPIOS (foco principal)                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+📂 ARQUIVO: sao_paulo/censo2022_sp_consolidado.csv
+
+📊 CONTÉM:
+   • 645 municípios de São Paulo
+   • Área territorial por município
+   • Região Administrativa (RA Campinas, RA São Paulo, etc)
+   • Região Metropolitana (RM Campinas, RMSP, etc)
+   • DRS - Departamento Regional de Saúde
+   • População estadual (contexto)
+
+💼 USE PARA:
+   ✓ Analisar reclamações por município
+   ✓ Identificar municípios críticos em SP
+   ✓ Análise por Região Administrativa
+   ✓ Análise por Região Metropolitana
+   ✓ Foco especial em Campinas
+
+📝 CÓDIGO BÁSICO:
+   df_sp = pd.read_csv('data/limpo/sao_paulo/censo2022_sp_consolidado.csv')
+
+───────────────────────────────────────────────────────────────────────────
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 3️⃣  ANÁLISE CAMPINAS (sede Agibank)                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+📂 ARQUIVO: sao_paulo/censo2022_sp_consolidado.csv (filtrar Campinas)
+
+📝 CÓDIGO BÁSICO:
+   df_sp = pd.read_csv('data/limpo/sao_paulo/censo2022_sp_consolidado.csv')
+   campinas = df_sp[df_sp['municipio'] == 'Campinas']
+
+───────────────────────────────────────────────────────────────────────────
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 4️⃣  ANÁLISE POR REGIÃO (agregado)                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+📂 ARQUIVO: brasil/censo2022_resumo_regioes_brasil.csv
+
+📊 CONTÉM:
+   • 5 regiões (Norte, Nordeste, Sul, Sudeste, Centro-Oeste)
+   • População total por região
+   • Quantidade de estados
+   • Percentual do Brasil
+
+💼 USE PARA:
+   ✓ Visão macro regional
+   ✓ Comparação entre grandes regiões
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔢 APLICAÇÕES COM NUMPY (para o projeto):
+
+1. CALCULAR TAXA DE RECLAMAÇÃO POR HABITANTE
+   taxa = np.where(populacao > 0, (reclamacoes / populacao) * 100000, 0)
+
+2. CLASSIFICAR CRITICIDADE
+   criticidade = np.select([taxa > 50, taxa > 30, taxa > 10], 
+                           ['CRÍTICO', 'ALTO', 'MODERADO'], 
+                           default='BAIXO')
+
+3. NORMALIZAR VALORES
+   norm = (valor - valor.min()) / (valor.max() - valor.min())
+
+4. CRIAR ÍNDICES COMPOSTOS
+   indice = (peso1 * var1 + peso2 * var2 + peso3 * var3)
+
+5. VETORIZAÇÃO DE CÁLCULOS
+   resultado = np.vectorize(funcao)(array)
+
+═══════════════════════════════════════════════════════════════════════════
+
+📊 EXEMPLOS DE ANÁLISES PARA O PROJETO:
+
+1. Taxa de reclamação por 100k habitantes por estado
+2. Identificar estados críticos (alta taxa + alta população)
+3. Comparar São Paulo com outros estados
+4. Analisar municípios de SP por RA
+5. Foco em Campinas vs outros municípios similares
+6. Densidade de reclamações em áreas urbanas
+7. Benchmark Agibank por região vs população
+
+═══════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,73 @@
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║                    EXEMPLOS PRÁTICOS DE USO                      ║
+╚══════════════════════════════════════════════════════════════════╝
+
+EXEMPLO 1: Ver os 10 estados mais populosos do Brasil
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import pandas as pd
+
+df = pd.read_csv('data/limpo/brasil/censo2022_estados_completo.csv')
+top10 = df.nlargest(10, 'populacao_2022')[['sigla', 'uf', 'populacao_2022']]
+print(top10)
+
+───────────────────────────────────────────────────────────────────
+
+EXEMPLO 2: Ver quantos municípios tem cada região administrativa de SP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import pandas as pd
+
+df = pd.read_csv('data/limpo/sao_paulo/censo2022_sp_consolidado.csv')
+por_regiao = df['regiao_administrativa'].value_counts()
+print(por_regiao)
+
+───────────────────────────────────────────────────────────────────
+
+EXEMPLO 3: Ver os 20 maiores municípios de SP por área
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import pandas as pd
+
+df = pd.read_csv('data/limpo/sao_paulo/censo2022_ranking_municipios.csv')
+top20 = df.head(20)[['ranking_area', 'municipio', 'area_km2']]
+print(top20)
+
+───────────────────────────────────────────────────────────────────
+
+EXEMPLO 4: Comparar população das regiões do Brasil
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import pandas as pd
+
+df = pd.read_csv('data/limpo/brasil/censo2022_resumo_regioes_brasil.csv')
+print(df[['regiao', 'populacao_total', 'percentual']].to_string(index=False))
+
+───────────────────────────────────────────────────────────────────
+
+EXEMPLO 5: Filtrar municípios de uma região específica
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import pandas as pd
+
+df = pd.read_csv('data/limpo/sao_paulo/censo2022_sp_consolidado.csv')
+
+# Filtrar apenas municípios da RA de Campinas
+campinas = df[df['regiao_administrativa'] == 'RA Campinas']
+print(f"Municípios na RA Campinas: {len(campinas)}")
+print(campinas[['municipio', 'area_km2']].head(10))
+
+───────────────────────────────────────────────────────────────────
+
+EXEMPLO 6: Calcular densidade populacional média por região
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import pandas as pd
+
+df = pd.read_csv('data/limpo/brasil/censo2022_estados_completo.csv')
+densidade_por_regiao = df.groupby('regiao')['densidade_hab_km2'].mean()
+print(densidade_por_regiao.sort_values(ascending=False))
+
+═══════════════════════════════════════════════════════════════════

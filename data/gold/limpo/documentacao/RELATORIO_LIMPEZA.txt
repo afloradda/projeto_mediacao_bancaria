@@ -1,0 +1,25 @@
+
+RELATÓRIO DE LIMPEZA - CENSO 2022
+Data: 2026-02-23 16:01:17
+
+1. BRASIL
+   - População: 203,080,756 habitantes
+   - Ano: 2022
+
+2. SÃO PAULO
+   - População: 44,411,238 habitantes
+   - Participação: 21.87% do Brasil
+   - Densidade: 178.92 hab/km²
+
+3. MUNICÍPIOS
+   - Total: 645
+   - Área total: 248,219.48 km²
+   - Área média: 384.84 km²
+   - Regiões Administrativas: 16
+
+ARQUIVOS GERADOS:
+- censo2022_brasil_limpo.csv
+- censo2022_sao_paulo_limpo.csv
+- municipios_sp_limpo.csv
+
+STATUS: ✅ DADOS LIMPOS E VALIDADOS

@@ -1,0 +1,26 @@
+COMO CARREGAR OS DADOS NORMALIZADOS
+================================================================================
+
+Data: 24/02/2026 15:38:46
+
+LOCALIZACAO DOS ARQUIVOS:
+- Pickles: c:\Users\caroline.coutinho\projeto_mediacao_bancaria\analises\gold\output\pickles
+- CSVs: c:\Users\caroline.coutinho\projeto_mediacao_bancaria\analises\gold\output
+
+CODIGO PARA CARREGAR:
+
+import pandas as pd
+from pathlib import Path
+
+CAMINHO_PICKLES = Path('output/pickles')
+CAMINHO_OUTPUT = Path('output')
+
+df_sp_normalizado = pd.read_pickle(CAMINHO_PICKLES / 'df_sp_normalizado.pkl')
+df_agibank_normalizado = pd.read_pickle(CAMINHO_PICKLES / 'df_agibank_normalizado.pkl')
+df_financeiro_sp = pd.read_pickle(CAMINHO_PICKLES / 'df_financeiro_sp.pkl')
+df_brasil_normalizado = pd.read_pickle(CAMINHO_PICKLES / 'df_brasil_normalizado.pkl')
+
+df_municipios_sp = pd.read_csv(CAMINHO_OUTPUT / 'municipios_sp_agregado.csv')
+df_municipios_agibank = pd.read_csv(CAMINHO_OUTPUT / 'municipios_agibank_agregado.csv')
+df_instituicoes_financeiro = pd.read_csv(CAMINHO_OUTPUT / 'instituicoes_financeiras_sp.csv')
+df_estados_agregado = pd.read_csv(CAMINHO_OUTPUT / 'estados_agregado.csv')

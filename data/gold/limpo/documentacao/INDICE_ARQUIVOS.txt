@@ -1,0 +1,45 @@
+
+ÍNDICE DE ARQUIVOS CSV - CENSO 2022 SÃO PAULO
+Gerado em: 2026-02-23 16:03:21
+
+ARQUIVOS PRINCIPAIS:
+====================
+
+1. censo2022_brasil_limpo.csv
+   - População total do Brasil em 2022
+   - 1 registro
+
+2. censo2022_sao_paulo_limpo.csv
+   - População de São Paulo em 2022
+   - 1 registro
+
+3. municipios_sp_limpo.csv
+   - Cadastro completo dos 645 municípios
+   - Informações territoriais e administrativas
+
+ARQUIVOS CONSOLIDADOS:
+======================
+
+4. censo2022_sp_consolidado.csv
+   - Dados completos de municípios + contexto
+   - 645 registros
+   - 16 colunas
+
+5. censo2022_resumo_regioes_administrativas.csv
+   - Agregação por Região Administrativa
+   - 16 registros
+
+6. censo2022_resumo_drs.csv
+   - Agregação por DRS (Saúde)
+   - 17 registros
+
+7. censo2022_ranking_municipios.csv
+   - Ranking por área territorial
+   - 645 registros
+
+PADRÃO DOS ARQUIVOS:
+====================
+- Encoding: UTF-8 com BOM
+- Separador: vírgula (,)
+- Sem valores nulos críticos
+- Tipos de dados validados
